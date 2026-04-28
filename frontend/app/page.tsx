@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 
+const API = "https://smart-job-matcher-ai.onrender.com";
+
 export default function Home() {
   const [resume, setResume] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -23,7 +25,7 @@ export default function Home() {
   }, []);
 
   const fetchJobs = async () => {
-    const res = await fetch("http://127.0.0.1:8000/jobs");
+    const res = await fetch(`${API}/jobs`);
     const data = await res.json();
     setJobs(data.jobs);
   };
@@ -38,12 +40,12 @@ export default function Home() {
         const formData = new FormData();
         formData.append("file", file);
 
-        res = await fetch("http://127.0.0.1:8000/match-file", {
+        res = await fetch(`${API}/match-file`, {
           method: "POST",
           body: formData,
         });
       } else {
-        res = await fetch("http://127.0.0.1:8000/match", {
+        res = await fetch(`${API}/match`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -64,7 +66,7 @@ export default function Home() {
   const handleAddJob = async () => {
     if (!jobTitle || !jobDesc) return;
 
-    await fetch("http://127.0.0.1:8000/add-job", {
+    await fetch(`${API}/add-job`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -81,7 +83,7 @@ export default function Home() {
   };
 
   const handleDelete = async (index: number) => {
-    await fetch(`http://127.0.0.1:8000/delete-job/${index}`, {
+    await fetch(`${API}/delete-job/${index}`, {
       method: "DELETE",
     });
 
