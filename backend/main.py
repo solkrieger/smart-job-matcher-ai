@@ -1,11 +1,22 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, File, UploadFile
 import json
 from pydantic import BaseModel
 import os
 from openai import OpenAI
 from dotenv import load_dotenv
+from fastapi.middleware.cors import CORSMiddleware
+import PyPDF2
+
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -19,7 +30,7 @@ SKILL_MAP = {
     "javascript": ["javascript", "js"],
     "react": ["react"],
     "node": ["node", "nodejs"],
-    "sql": ["sql", "postgres", "postgresql", "mysql"],
+    "sql": ["sql",  "mysql"],
     "api": ["api", "apis", "rest", "restful"],
     "html": ["html"],
     "css": ["css"],
@@ -30,22 +41,29 @@ SKILL_MAP = {
     "docker": ["docker"],
     "kubernetes": ["kubernetes", "k8s"],
     "git": ["git"],
-    "linux": ["linux"]
+    "linux": ["linux"],
+    "django": ["django"],
+    "flask": ["flask"],
+    "postgresql": ["postgresql", "postgres"],
+    "sqlite": ["sqlite"],
+    "github": ["github"],
+    "oop": ["oop", "object oriented"],
 }
 
 
 
 
 def extract_skills_local(text):
-    text = text.lower()
-    found_skills = set()
+    text = text.lower().replace("-", " ")  # 👈 ONLY CHANGE
+
+    found = set()
 
     for skill, keywords in SKILL_MAP.items():
         for keyword in keywords:
             if keyword in text:
-                found_skills.add(skill)
+                found.add(skill)
 
-    return found_skills
+    return found
 
 
 def extract_skills_ai(text):
@@ -83,9 +101,19 @@ def match_score(resume_skills, job_desc):
     return len(common), list(common)
 
 
+def extract_text_from_pdf(file):
+    reader = PyPDF2.PdfReader(file)
+    text = ""
+    for page in reader.pages:
+        text += page.extract_text() or ""
+    return text
+
+
+
 @app.get("/")
 def read_root():
     return {"message": "Backend is working"}
+
 
 @app.get("/jobs")
 def get_jobs():
@@ -100,6 +128,69 @@ def match_jobs(request: ResumeRequest):
         jobs = json.load(file)
 
     resume_skills = extract_skills_ai(request.resume_text)
+
+    results = []
+
+    for job in jobs:
+        score, matches = match_score(
+            resume_skills,
+            job["description"]
+        )
+
+        results.append({
+            "title": job["title"],
+            "score": score,
+            "match_skills": matches
+        })
+
+    results.sort(key=lambda x: x["score"], reverse=True)
+
+    return {"results": results}
+
+
+@app.post("/add-job")
+def add_job(job: dict):
+    with open("jobs.json", "r") as f:
+        jobs = json.load(f)
+
+    jobs.append(job)
+
+    with open("jobs.json", "w") as f:
+        json.dump(jobs, f, indent=2)
+
+    return {"message": "Job added"}
+
+
+@app.get("/jobs")
+def get_jobs():
+    with open("jobs.json", "r") as f:
+        jobs = json.load(f)
+
+    return {"jobs": jobs}
+
+
+@app.delete("/delete-job/{index}")
+def delete_job(index: int):
+    with open("jobs.json", "r") as f:
+        jobs = json.load(f)
+
+    if 0 <= index < len(jobs):
+        jobs.pop(index)
+
+    with open("jobs.json", "w") as f:
+        json.dump(jobs, f, indent=2)
+
+    return {"message": "Deleted"}
+
+
+@app.post("/match-file")
+async def match_file(file: UploadFile = File(...)):
+    text = extract_text_from_pdf(file.file)
+
+    resume_skills = extract_skills_ai(text)
+
+    with open("jobs.json", "r") as f:
+        jobs = json.load(f)
 
     results = []
 

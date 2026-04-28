@@ -1,14 +1,13 @@
-# Smart Job Matcher
+# Python
+venv/
+__pycache__/
+*.pyc
+.env
 
-A simple AI app that ranks job listings based on a user's resume.
+# Node
+node_modules/
+.next/
 
-## Goal
-Help users quickly find jobs they are a strong match for.
-
-## Stack
-- Backend: FastAPI
-- Frontend: React / Next.js
-- AI: embeddings + similarity
-
-## Status
-Starting project setup.
+# OS
+.DS_Store
+Thumbs.db
