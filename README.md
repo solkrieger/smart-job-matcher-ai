@@ -72,24 +72,7 @@ Deployed on Vercel
 Backend
 
 Deployed on Render
-📁 Project Structure
-smart-job-matcher/
-│
-├── backend/              # FastAPI server
-│   ├── main.py
-│   ├── jobs.json
-│   └── requirements.txt
-│
-├── frontend/             # Next.js app
-│   ├── app/
-│   │   ├── page.tsx
-│   │   ├── layout.tsx
-│   │   └── globals.css
-│   ├── public/
-│   └── package.json
-│
-├── .gitignore
-└── README.md
+
 🔐 Notes
 Backend may take a few seconds to wake up (free hosting)
 API usage depends on your OpenAI key
