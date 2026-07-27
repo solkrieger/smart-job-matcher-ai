@@ -4,7 +4,7 @@ AI-powered full-stack web application that analyzes resumes and matches them aga
 
 🚀 Live Demo
 
-Frontend: https://smart-job-matcher-32cye3rkm-solkriegers-projects.vercel.app
+Frontend: https://smart-job-matcher-ai.vercel.app/
 
 Backend API: https://smart-job-matcher-ai.onrender.com
 
